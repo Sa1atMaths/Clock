@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Timer and Stopwatch</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    #currentTime {
+      font-size: 32px;
+      margin-bottom: 20px;
+    }
+    button {
+      font-size: 20px;
+      padding: 10px 20px;
+      margin: 5px;
+    }
+    .clock-display {
+      font-size: 48px;
+      margin: 20px 0;
+    }
+    .section {
+      display: none;
+    }
+    #lapTimes {
+      margin-top: 20px;
+      text-align: left;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+      background: #fff;
+      padding: 10px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="currentTime">--:--:--</div>
+
+  <button onclick="showSection('timer')">Timer</button>
+  <button onclick="showSection('stopwatch')">Stopwatch</button>
+
+  <!-- Timer Section -->
+  <div id="timer" class="section">
+    <div class="clock-display" id="timerDisplay">00:00</div>
+    <input type="number" id="timerMinutes" placeholder="Minutes" style="font-size:20px; width:100px;">
+    <button onclick="startTimer()">Start</button>
+    <button onclick="resetTimer()">Reset</button>
+  </div>
+
+  <!-- Stopwatch Section -->
+  <div id="stopwatch" class="section">
+    <div class="clock-display" id="stopwatchDisplay">00:00:00:000</div>
+    <button onclick="startStopwatch()">Start</button>
+    <button onclick="pauseStopwatch()">Pause</button>
+    <button onclick="resumeStopwatch()">Resume</button>
+    <button onclick="resetStopwatch()">Reset</button>
+    <button onclick="recordLap()">Lap</button>
+    <div id="lapTimes"></div>
+  </div>
+
+  <script>
+    // Show/hide sections
+    function showSection(id) {
+      document.getElementById('timer').style.display = 'none';
+      document.getElementById('stopwatch').style.display = 'none';
+      document.getElementById(id).style.display = 'block';
+    }
+
+    // Current time updater
+    setInterval(() => {
+      const now = new Date();
+      document.getElementById('currentTime').textContent = now.toLocaleTimeString();
+    }, 1000);
+
+    // ===============================
+    // Timer functionality
+    // ===============================
+    let timerInterval;
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      let seconds = parseInt(document.getElementById('timerMinutes').value) * 60;
+      const display = document.getElementById('timerDisplay');
+
+      if (isNaN(seconds) || seconds <= 0) return alert("Enter valid minutes");
+
+      timerInterval = setInterval(() => {
+        let mins = Math.floor(seconds / 60);
+        let secs = seconds % 60;
+        display.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        if (seconds <= 0) {
+          clearInterval(timerInterval);
+          alert("Time's up!");
+        }
+        seconds--;
+      }, 1000);
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      document.getElementById('timerDisplay').textContent = '00:00';
+      document.getElementById('timerMinutes').value = '';
+    }
+
+    // ===============================
+    // Stopwatch functionality
+    // ===============================
+    let stopwatchInterval;
+    let stopwatchTime = 0; // in milliseconds
+    let running = false;
+
+    function startStopwatch() {
+      if (running) return;
+      stopwatchTime = 0;
+      document.getElementById('lapTimes').innerHTML = '';
+      startInterval();
+    }
+
+    function pauseStopwatch() {
+      clearInterval(stopwatchInterval);
+      running = false;
+    }
+
+    function resumeStopwatch() {
+      if (!running) startInterval();
+    }
+
+    function resetStopwatch() {
+      clearInterval(stopwatchInterval);
+      stopwatchTime = 0;
+      running = false;
+      document.getElementById('stopwatchDisplay').textContent = '00:00:00:000';
+      document.getElementById('lapTimes').innerHTML = '';
+    }
+
+    function startInterval() {
+      running = true;
+      stopwatchInterval = setInterval(() => {
+        stopwatchTime += 10;
+        const hrs = Math.floor(stopwatchTime / 3600000);
+        const mins = Math.floor((stopwatchTime % 3600000) / 60000);
+        const secs = Math.floor((stopwatchTime % 60000) / 1000);
+        const ms = stopwatchTime % 1000;
+        document.getElementById('stopwatchDisplay').textContent =
+          `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}:${String(ms).padStart(3, '0')}`;
+      }, 10);
+    }
+
+    function recordLap() {
+      if (!running && stopwatchTime === 0) return;
+
+      const hrs = Math.floor(stopwatchTime / 3600000);
+      const mins = Math.floor((stopwatchTime % 3600000) / 60000);
+      const secs = Math.floor((stopwatchTime % 60000) / 1000);
+      const ms = stopwatchTime % 1000;
+      const timeStr = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}:${String(ms).padStart(3, '0')}`;
+
+      const lapDiv = document.getElementById('lapTimes');
+      const lap = document.createElement('div');
+      lap.textContent = `Lap ${lapDiv.children.length + 1}: ${timeStr}`;
+      lapDiv.appendChild(lap);
+    }
+  </script>
+
+</body>
+</html>
